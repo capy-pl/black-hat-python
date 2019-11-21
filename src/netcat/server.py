@@ -4,7 +4,6 @@ from threading import Thread
 import subprocess
 from typing import Dict
 
-
 class Server:
     def __init__(self, target: str = '0.0.0.0', port: int = 3000):
         self.target = str(ip_address(target))
@@ -65,24 +64,25 @@ def handler(client_socket: socket.socket, upload_destination: str = '', interact
         client_socket.send(output.encode('utf8'))
 
     if interactive:
+        client_socket.send(b'<BHP:#> ')
         while True:
-            client_socket.send(b'<BHP:#> ')
             cmd_buffer = b''
 
             while b'\n' not in cmd_buffer:
                 cmd_buffer += client_socket.recv(1024)
 
-            cmd = str(cmd_buffer)
-            cmd = cmd.split('\n')[0]
-            output = run_command(cmd)
+            cmd = cmd_buffer.decode()
+            cmd = cmd.split('\n')
+            if len(cmd) > 0:
+                output = run_command(cmd[0])
 
-            client_socket.send(output.encode('utf8'))
+            client_socket.send(output.encode('utf8') + b'<BHP:#> ')
 
+    client_socket.close()
 
 def run_command(command: str) -> str:
     command = command.rstrip()
     command = command.split()
-
     try:
         completed_process = subprocess.run(
             command, capture_output=True, encoding='utf8')
@@ -90,3 +90,5 @@ def run_command(command: str) -> str:
     except subprocess.CalledProcessError:
         print('Command execute failed.')
         return completed_process.stderr
+    except OSError:
+        return 'Command execute failed.'

@@ -8,25 +8,20 @@ class Client:
         self.target = str(ip_address(target))
         self.port = port
 
-    def send(self, buffer: bytes):
+    def connect(self):
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        client.settimeout(0.001)
         try:
             client.connect((self.target, self.port))
-            if not len(buffer):
-                raise Exception('Empty buffer.')
-
-            client.send(buffer)
-
             while True:
                 recv_len = 1
                 response = b''
                 while recv_len:
-                    try:
-                        data = client.recv(4096)
-                        recv_len = len(data)
-                        response += data
-                    except socket.timeout:
+                    data = client.recv(4096)
+                    recv_len = len(data)
+                    response += data
+                    
+                    # no more data
+                    if recv_len < 4096:
                         break
 
                 print(response.decode(), end='')

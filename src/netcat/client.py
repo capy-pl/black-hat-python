@@ -19,7 +19,7 @@ class Client:
                     data = client.recv(4096)
                     recv_len = len(data)
                     response += data
-                    
+
                     # no more data
                     if recv_len < 4096:
                         break
@@ -32,6 +32,7 @@ class Client:
                 buffer += b'\n'
 
                 client.send(buffer)
+                print("Message send. Length of byte {}".format(len(buffer)))
 
         except KeyboardInterrupt:
             print('KeyboardInterrupt detected.')
